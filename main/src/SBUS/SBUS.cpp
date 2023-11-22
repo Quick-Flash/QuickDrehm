@@ -65,6 +65,10 @@ void SBUS::begin()
   #elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)		// Arduino Mega 2560, 328P or 32u4
     _bus->begin(_sbusBaud, SERIAL_8E2);
 	#elif defined(ARDUINO_SAMD_ZERO)		// Adafruit Feather M0
+
+
+
+
 		_bus->begin(_sbusBaud, SERIAL_8E2);
 	#else
 		#error unsupported device
