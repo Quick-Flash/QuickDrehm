@@ -12,9 +12,6 @@ http://www.brokking.net/ymfc-32_main.html
 Madgwick filter function adapted from:
 https://github.com/arduino-libraries/MadgwickAHRS
 
-MPU9250 implementation based on MPU9250 library by:
-brian.taylor@bolderflight.com
-http://www.bolderflight.com
 
 Thank you to:
 RcGroups 'jihlein' - IMU implementation overhaul + SBUS implementation.
@@ -426,11 +423,6 @@ void setup() {
 
   // Indicate entering main loop with 3 quick blinks
   setupBlink(3, 160, 70); // numBlinks, upTime (ms), downTime (ms)
-
-  // If using MPU9250 IMU, uncomment for one-time magnetometer calibration (may need to repeat for new locations)
-  // 
-  // calibrateMagnetometer(); // Generates magentometer error and scale factors to be pasted in user-specified variables section
-  // 
 }
 
 
@@ -467,21 +459,11 @@ void loop() {
   float raw_acc[AXIS_COUNT]; // static means it is not reset every loop
 
   // Get IMU sensor data
-#ifdef USE_MPU6050_I2C
   bool new_acc = getIMUdata( // Pulls raw gyro, and accelerometer from IMU returns true if there was new acc data
     gyro_bias, acc_bias, // is used to fix bias, but is not updated
     raw_gyro, raw_acc, // will be updated with imu data
     imuRotation // the rotation of the imu
   );
-#else
-  float raw_mag[AXIS_COUNT];
-
-  bool new_acc = getIMUdata( // Pulls raw gyro, and accelerometer from IMU returns true if there was new acc data
-    gyro_bias, acc_bias, mag_bias, mag_scale, // is used to fix bias, but is not updated
-    raw_gyro, raw_acc, raw_mag, // will be updated with imu data
-    imuRotation // the rotation of the imu
-  );
-#endif
 
   float gyro_filtered[AXIS_COUNT] = { raw_gyro[AXIS_ROLL], raw_gyro[AXIS_PITCH], raw_gyro[AXIS_YAW] };
   gyroFiltersApply(&gyroFilters, gyro_filtered);
@@ -492,19 +474,11 @@ void loop() {
   float attitude_euler[AXIS_COUNT]; // This is the attitude in euler angles, AKA roll, pitch, and yaw
   float gravity_vector[AXIS_COUNT]; // This is a 3d vector that points towards gravity. Using this is more accurate for angle mode
 
-#ifdef USE_MPU6050_I2C
   // Updates estimated atittude (degrees) Think of this like AHRS in an aircraft
   Madgwick6DOF(
     gyro_filtered, acc_filtered, new_acc, DT, ACC_DT, // Is used to calculate attitude changes, but is not updated
     attitude_euler, gravity_vector // Will be updated with attitude data
   );
-#else
-  // Updates estimated atittude (degrees)
-  Madgwick9DOF(
-    gyro_filtered, raw_acc, raw_mag, DT, // Is used to calculate attitude changes, but is not updated
-    attitude_euler, gravity_vector // Will be updated with attitude data
-  );
-#endif
 
 //===============================================GET RC DATA AND FILTER===================================================//
 

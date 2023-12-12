@@ -5,15 +5,9 @@
 //========================================================================================================================//
 //                                                      IMU DEFINES                                                       //
 //========================================================================================================================//
-#ifdef USE_MPU6050_I2C
-  #include "src/MPU6050/MPU6050.h"
-  MPU6050 mpu6050;
-#elif defined USE_MPU9250_SPI
-  #include "src/MPU9250/MPU9250.h"
-  MPU9250 mpu9250(SPI2,36);
-#else
-  #error No MPU defined... 
-#endif
+#include "src/MPU6050/MPU6050.h"
+MPU6050 mpu6050;
+
 
 // Uncomment only one full scale gyro range (deg/sec)
 // #define GYRO_250DPS // not recommended
@@ -28,25 +22,15 @@
 #define ACCEL_16G // Default
 
 // Setup gyro and accel full scale value selection and scale factor
-#ifdef USE_MPU6050_I2C
-  #define GYRO_FS_SEL_250    MPU6050_GYRO_FS_250
-  #define GYRO_FS_SEL_500    MPU6050_GYRO_FS_500
-  #define GYRO_FS_SEL_1000   MPU6050_GYRO_FS_1000
-  #define GYRO_FS_SEL_2000   MPU6050_GYRO_FS_2000
-  #define ACCEL_FS_SEL_2     MPU6050_ACCEL_FS_2
-  #define ACCEL_FS_SEL_4     MPU6050_ACCEL_FS_4
-  #define ACCEL_FS_SEL_8     MPU6050_ACCEL_FS_8
-  #define ACCEL_FS_SEL_16    MPU6050_ACCEL_FS_16
-#elif defined USE_MPU9250_SPI
-  #define GYRO_FS_SEL_250    mpu9250.GYRO_RANGE_250DPS
-  #define GYRO_FS_SEL_500    mpu9250.GYRO_RANGE_500DPS
-  #define GYRO_FS_SEL_1000   mpu9250.GYRO_RANGE_1000DPS                                                        
-  #define GYRO_FS_SEL_2000   mpu9250.GYRO_RANGE_2000DPS
-  #define ACCEL_FS_SEL_2     mpu9250.ACCEL_RANGE_2G
-  #define ACCEL_FS_SEL_4     mpu9250.ACCEL_RANGE_4G
-  #define ACCEL_FS_SEL_8     mpu9250.ACCEL_RANGE_8G
-  #define ACCEL_FS_SEL_16    mpu9250.ACCEL_RANGE_16G
-#endif
+#define GYRO_FS_SEL_250    MPU6050_GYRO_FS_250
+#define GYRO_FS_SEL_500    MPU6050_GYRO_FS_500
+#define GYRO_FS_SEL_1000   MPU6050_GYRO_FS_1000
+#define GYRO_FS_SEL_2000   MPU6050_GYRO_FS_2000
+#define ACCEL_FS_SEL_2     MPU6050_ACCEL_FS_2
+#define ACCEL_FS_SEL_4     MPU6050_ACCEL_FS_4
+#define ACCEL_FS_SEL_8     MPU6050_ACCEL_FS_8
+#define ACCEL_FS_SEL_16    MPU6050_ACCEL_FS_16
+
   
 #ifdef GYRO_250DPS
   #define GYRO_SCALE GYRO_FS_SEL_250
@@ -137,49 +121,6 @@ void vectorRotation(float dest[], axisRotation rotation[]) {
 
 }
 
-// magnetometer calibration
-void calibrateMagnetometer() {
-#ifdef USE_MPU9250_SPI 
-  Serial.println("Beginning magnetometer calibration in");
-  Serial.println("3...");
-  delay(1000);
-  Serial.println("2...");
-  delay(1000);
-  Serial.println("1...");
-  delay(1000);
-  Serial.println("Rotate the IMU about all axes until complete.");
-  Serial.println(" ");
-  float success = mpu9250.calibrateMag();
-  if(success) {
-    Serial.println("Calibration Successful!");
-    Serial.println("Please comment out the calibrateMagnetometer() function and copy these values into the code:");
-    Serial.print("float mag_scale[AXIS_COUNT] = {");
-    Serial.print(mpu9250.getMagBiasX_uT());
-    Serial.print("f, ");
-    Serial.print(mpu9250.getMagBiasY_uT());
-    Serial.print("f, ");
-    Serial.print(mpu9250.getMagBiasZ_uT());
-    Serial.println("f};");
-
-    Serial.print("float mag_scale[AXIS_COUNT] = {");
-    Serial.print(mpu9250.getMagScaleFactorX());
-    Serial.print("f, ");
-    Serial.print(mpu9250.getMagScaleFactorY());
-    Serial.print("f, ");
-    Serial.print(mpu9250.getMagScaleFactorZ());
-    Serial.println("f};");
-    Serial.println(" ");
-    Serial.println("If you are having trouble with your attitude estimate at a new flying location, repeat this process as needed.");
-  } else {
-    Serial.println("Calibration Unsuccessful. Please reset the board and try again.");
-  }
-  
-    while(1); // Halt code so it won't enter main loop until this function commented out
-#endif
-  Serial.println("Error: MPU9250 not selected. Cannot calibrate non-existent magnetometer.");
-  while(1); // Halt code so it won't enter main loop until this function commented out
-}
-
 void calculateGyroBias() {
   // DESCRIPTION: Computes IMU accelerometer and gyro error on startup. Note: vehicle should be powered up on flat surface
   /*
@@ -196,19 +137,11 @@ void calculateGyroBias() {
   //Read IMU values 12000 times
   int c = 0;
   while (c < LOOPRATE * 10) { // 10 seconds of averaging
-#ifdef USE_MPU6050_I2C
     mpu6050.getMotion6(
       &unscaled_acc[AXIS_X], &unscaled_acc[AXIS_Y], &unscaled_acc[AXIS_Z], 
       &unscaled_gyro[AXIS_ROLL], &unscaled_gyro[AXIS_PITCH], &unscaled_gyro[AXIS_YAW]
     );
-#elif defined USE_MPU9250_SPI
-    int16_t unscaled_mag[AXIS_COUNT]; // only MPU9250 has mag
-    mpu9250.getMotion9(
-      &unscaled_acc[AXIS_X], &unscaled_acc[AXIS_Y], &unscaled_acc[AXIS_Z], 
-      &unscaled_gyro[AXIS_ROLL], &unscaled_gyro[AXIS_PITCH], &unscaled_gyro[AXIS_YAW], 
-      &unscaled_mag[AXIS_X], &unscaled_mag[AXIS_Y], &unscaled_mag[AXIS_Z]
-    );
-#endif
+
     
     for (int i = 0; i < AXIS_COUNT; i++) {
       float acc  = unscaled_acc[i] / ACCEL_SCALE_FACTOR;
@@ -262,13 +195,9 @@ void calculateGyroBias() {
 }
 
 
-#ifdef USE_MPU6050_I2C // no mag
 int32_t imu_count = 0; // 32 bit as its faster to run but uses more memory, we have plenty of memory
 
 bool getIMUdata(float gyro_bias[], float acc_bias[], float gyro[], float acc[], axisRotation rotation[]) {
-#elif USE_MPU9250_SPI // has mag
-bool getIMUdata(float gyro_bias[], float acc_bias[], float mag_bias[], float gyro[], float acc[], float mag[], axisRotation rotation[]) {
-#endif
   // DESCRIPTION: Request full dataset from IMU gyro, accelerometer, and magnetometer data
   /*
    * Reads accelerometer, gyro, and magnetometer data from IMU.
@@ -280,7 +209,6 @@ bool getIMUdata(float gyro_bias[], float acc_bias[], float mag_bias[], float gyr
   int16_t unscaled_gyro[AXIS_COUNT];
   bool new_acc = false;
 
-#ifdef USE_MPU6050_I2C
   imu_count += 1;
   if (imu_count > ACC_DIVIDER) {
     new_acc = true;
@@ -299,14 +227,6 @@ bool getIMUdata(float gyro_bias[], float acc_bias[], float mag_bias[], float gyr
   );
 
   // mpu6050.getMotion6(&unscaled_acc[AXIS_X], &unscaled_acc[AXIS_Y], &unscaled_acc[AXIS_Z], &unscaled_gyro[AXIS_ROLL], &unscaled_gyro[AXIS_PITCH], &unscaled_gyro[AXIS_YAW]);
-#elif defined USE_MPU9250_SPI
-  int16_t unscaled_mag[AXIS_COUNT]; // only MPU9250 has mag
-  mpu9250.getMotion9(
-    &unscaled_acc[AXIS_X], &unscaled_acc[AXIS_Y], &unscaled_acc[AXIS_Z], 
-    &unscaled_gyro[AXIS_ROLL], &unscaled_gyro[AXIS_PITCH], &unscaled_gyro[AXIS_YAW], 
-    &unscaled_mag[AXIS_X], &unscaled_mag[AXIS_Y], &unscaled_mag[AXIS_Z]
-  );
-#endif
 
   // loop through all acc, gyro and mag
   for (int i = 0; i < AXIS_COUNT; i++) {
@@ -322,21 +242,10 @@ bool getIMUdata(float gyro_bias[], float acc_bias[], float mag_bias[], float gyr
 
     // Bias correct the gyro
     gyro[i] -= gyro_bias[i];
-
-#ifdef USE_MPU9250_SPI
-    // Scale magnetometer
-    mag[i] = unscaled_mag[i] / 6.0f; // uT
-
-    // Bias correct the mag
-    mag[i] = (Mag[i] - mag_bias[i]) * mag_scale[i];
-#endif
   }
 
   vectorRotation(acc, rotation);
   vectorRotation(gyro, rotation);
-#ifdef USE_MPU9250_SPI
-  vectorRotation(mag, rotation);
-#endif
   return new_acc;
 }
 
@@ -345,7 +254,6 @@ void IMUinit() {
   /*
    * Don't worry about how this works.
    */
-#ifdef USE_MPU6050_I2C
   Wire.begin();
   Wire.setClock(1000000); // Note this is 2.5 times the spec sheet 400 kHz max...
     
@@ -362,28 +270,6 @@ void IMUinit() {
   // do is set the desired fullscale ranges
   mpu6050.setFullScaleGyroRange(GYRO_SCALE);
   mpu6050.setFullScaleAccelRange(ACCEL_SCALE);
-    
-#elif defined USE_MPU9250_SPI
-  int status = mpu9250.begin();    
-
-  if (status < 0) {
-    Serial.println("MPU9250 initialization unsuccessful");
-    Serial.println("Check MPU9250 wiring or try cycling power");
-    Serial.print("Status: ");
-    Serial.println(status);
-    while(1) {}
-  }
-
-  // From the reset state all registers should be 0x00, so we should be at
-  // max sample rate with digital low pass filter(s) off.  All we need to
-  // do is set the desired fullscale ranges
-  mpu9250.setGyroRange(GYRO_SCALE);
-  mpu9250.setAccelRange(ACCEL_SCALE);
-  mpu9250.setMagCalX(mag_bias[X], mag_scale[X]);
-  mpu9250.setMagCalY(mag_bias[Y], mag_scale[Y]);
-  mpu9250.setMagCalZ(mag_bias[Z], mag_scale[Z]);
-  mpu9250.setSrd(0); // sets gyro and accel read to 1khz, magnetometer read to 100hz
-#endif
 }
 
 //===================================================MADGWICK AKA AHRS====================================================//
@@ -393,142 +279,6 @@ float q0 = 1.0f; //Initialize quaternion for madgwick filter
 float q1 = 0.0f;
 float q2 = 0.0f;
 float q3 = 0.0f;
-
-#ifdef USE_MPU9250_SPI
-void Madgwick9DOF(float gyro[], float acc[], float mag[], float dt) {
-  // DESCRIPTION: Attitude estimation through sensor fusion - 9DOF
-  /*
-   * This function fuses the accelerometer gyro, and magnetometer readings Acc[], Gyro[] and, Mag[] for attitude estimation.
-   * Don't worry about the math. There is a tunable parameter B_madgwick in the user specified variable section which basically
-   * adjusts the weight of gyro data in the state estimate. Higher beta leads to noisier estimate, lower 
-   * beta leads to slower to respond estimate. It is currently tuned for 2kHz loop rate. This function updates the roll_IMU,
-   * pitch_IMU, and yaw_IMU variables which are in degrees. If magnetometer data is not available, this function calls Madgwick6DOF() instead.
-   */
-
-  // give mag a shorter name
-  float mx = mag[AXIS_X];
-  float my = mag[AXIS_Y];
-  float mz = mag[AXIS_Z];
-
-  // Use 6DOF algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
-  if ((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-    Madgwick6DOF(gyro, acc, dt, dt);
-    return;
-  }
-
-  // give gyro and acc shorter names
-  float gx = gyro[AXIS_X];
-  float gy = gyro[AXIS_Y];
-  float gz = gyro[AXIS_Z];
-
-  float ax = acc[AXIS_X];
-  float ay = acc[AXIS_X];
-  float az = acc[AXIS_X];
-
-  // Convert gyroscope degrees/sec to radians/sec
-  gx *= DEG_TO_RAD;
-  gy *= DEG_TO_RAD;
-  gz *= DEG_TO_RAD;
-
-  // Rate of change of quaternion from gyroscope
-  float qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
-  float qDot2 = 0.5f * (q0 * gx + q2 * gz - q3 * gy);
-  float qDot3 = 0.5f * (q0 * gy - q1 * gz + q3 * gx);
-  float qDot4 = 0.5f * (q0 * gz + q1 * gy - q2 * gx);
-
-  // Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
-  if (!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
-
-    // Normalise accelerometer measurement
-    float accNorm = invSqrt(ax * ax + ay * ay + az * az);
-    ax *= accNorm;
-    ay *= accNorm;
-    az *= accNorm;
-
-    // Normalise magnetometer measurement
-    float magNorm = invSqrt(mx * mx + my * my + mz * mz);
-    mx *= magNorm;
-    my *= magNorm;
-    mz *= magNorm;
-
-    // Auxiliary variables to avoid repeated arithmetic
-    // Unused for now
-    // TODO look at how to optimize this part of the code again
-    /*
-    float _2q0, _2q1, _2q2, _2q3, _2q0q2, _2q2q3, q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
-    _2q0 = 2.0f * q0;
-    _2q1 = 2.0f * q1;
-    _2q2 = 2.0f * q2;
-    _2q3 = 2.0f * q3;
-    _2q0q2 = 2.0f * q0 * q2;
-    _2q2q3 = 2.0f * q2 * q3;
-    q0q0 = q0 * q0;
-    q0q1 = q0 * q1;
-    q0q2 = q0 * q2;
-    q0q3 = q0 * q3;
-    q1q1 = q1 * q1;
-    q1q2 = q1 * q2;
-    q1q3 = q1 * q3;
-    q2q2 = q2 * q2;
-    q2q3 = q2 * q3;
-    q3q3 = q3 * q3;
-    */
-
-    // Reference direction of Earth's magnetic field
-
-    float _2q0mx = 2.0f * q0 * mx;
-    float _2q0my = 2.0f * q0 * my;
-    float _2q0mz = 2.0f * q0 * mz;
-    float _2q1mx = 2.0f * q1 * mx;
-
-    float hx = mx * q0 * q0 - _2q0my * q3 + _2q0mz * q2 + mx * q1 * q1 + 2.0f * q1 * my * q2 + 2.0f * q1 * mz * q3 - mx * q2 * q2 - mx * q3 * q3;
-    float hy = _2q0mx * q3 + my * q0 * q0 - _2q0mz * q1 + _2q1mx * q2 - my * q1 * q1 + my * q2 * q2 + 2.0f * q2 * mz * q3 - my * q3 * q3;
-    float _2bx = sqrtf(hx * hx + hy * hy);
-    float _2bz = -_2q0mx * q2 + _2q0my * q1 + mz * q0 * q0 + _2q1mx * q3 - mz * q1 * q1 + 2.0f * q2 * my * q3 - mz * q2 * q2 + mz * q3 * q3;
-    float _4bx = 2.0f * _2bx;
-    float _4bz = 2.0f * _2bz;
-
-    // Gradient decent algorithm corrective step
-    float s0 = -2.0f * q2 * (2.0f * q1 * q3 - 2.0f * q0 * q2 - ax) + 2.0f * q1 * (2.0f * q0 * q1 + 2.0f * q2 * q3 - ay) - _2bz * q2 * (_2bx * (0.5f - q2 * q2 - q3 * q3) + _2bz * (q1 * q3 - q0 * q2) - mx) + (-_2bx * q3 + _2bz * q1) * (_2bx * (q1 * q2 - q0 * q3) + _2bz * (q0 * q1 + q2 * q3) - my) + _2bx * q2 * (_2bx * (q0 * q2 + q1 * q3) + _2bz * (0.5f - q1 * q1 - q2 * q2) - mz);
-    float s1 = 2.0f * q3 * (2.0f * q1 * q3 - 2.0f * q0 * q2 - ax) + 2.0f * q0 * (2.0f * q0 * q1 + 2.0f * q2 * q3 - ay) - 4.0f * q1 * (1 - 2.0f * q1 * q1 - 2.0f * q2 * q2 - az) + _2bz * q3 * (_2bx * (0.5f - q2 * q2 - q3 * q3) + _2bz * (q1 * q3 - q0 * q2) - mx) + (_2bx * q2 + _2bz * q0) * (_2bx * (q1 * q2 - q0 * q3) + _2bz * (q0 * q1 + q2 * q3) - my) + (_2bx * q3 - _4bz * q1) * (_2bx * (q0 * q2 + q1 * q3) + _2bz * (0.5f - q1 * q1 - q2 * q2) - mz);
-    float s2 = -2.0f * q0 * (2.0f * q1 * q3 - 2.0f * q0 * q2 - ax) + 2.0f * q3 * (2.0f * q0 * q1 + 2.0f * q2 * q3 - ay) - 4.0f * q2 * (1 - 2.0f * q1 * q1 - 2.0f * q2 * q2 - az) + (-_4bx * q2 - _2bz * q0) * (_2bx * (0.5f - q2 * q2 - q3 * q3) + _2bz * (q1 * q3 - q0 * q2) - mx) + (_2bx * q1 + _2bz * q3) * (_2bx * (q1 * q2 - q0 * q3) + _2bz * (q0 * q1 + q2 * q3) - my) + (_2bx * q0 - _4bz * q2) * (_2bx * (q0 * q2 + q1 * q3) + _2bz * (0.5f - q1 * q1 - q2 * q2) - mz);
-    float s3 = 2.0f * q1 * (2.0f * q1 * q3 - 2.0f * q0 * q2 - ax) + 2.0f * q2 * (2.0f * q0 * q1 + 2.0f * q2 * q3 - ay) + (-_4bx * q3 + _2bz * q1) * (_2bx * (0.5f - q2 * q2 - q3 * q3) + _2bz * (q1 * q3 - q0 * q2) - mx) + (-_2bx * q0 + _2bz * q2) * (_2bx * (q1 * q2 - q0 * q3) + _2bz * (q0 * q1 + q2 * q3) - my) + _2bx * q1 * (_2bx * (q0 * q2 + q1 * q3) + _2bz * (0.5f - q1 * q1 - q2 * q2) - mz);
-    float sNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
-    s0 *= sNorm;
-    s1 *= sNorm;
-    s2 *= sNorm;
-    s3 *= sNorm;
-
-    // Apply feedback step
-    qDot1 -= B_madgwick * s0;
-    qDot2 -= B_madgwick * s1;
-    qDot3 -= B_madgwick * s2;
-    qDot4 -= B_madgwick * s3;
-  }
-
-  // Integrate rate of change of quaternion to yield quaternion
-  q0 += qDot1 * dt;
-  q1 += qDot2 * dt;
-  q2 += qDot3 * dt;
-  q3 += qDot4 * dt;
-
-  // Normalize quaternion
-  float quatNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-  q0 *= quatNorm;
-  q1 *= quatNorm;
-  q2 *= quatNorm;
-  q3 *= quatNorm;
-  
-  attitude_euler[AXIS_ROLL] = atan2(2.0f * (q0 * q1 + q2 * q3), 1.0f - 2.0f * (q1 * q1 + q2 * q2)) * RAD_TO_DEG;
-  attitude_euler[AXIS_PITCH] = -90.0f + acos(2.0f * (q1 * q3 - q0 * q2)) * RAD_TO_DEG;
-  attitude_euler[AXIS_YAW] = atan2(2.0f * (q1 * q2 + q0 * q3), 1.0f - 2.0f * (q2 * q2 + q3 * q3)) * RAD_TO_DEG;
-
-  gravity_vector[AXIS_X] = 2.0f * (q1 * q3 - q0 * q2);
-  gravity_vector[AXIS_Y] = 2.0f * (q0 * q1 + q2 * q3);
-  gravity_vector[AXIS_Z] = q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3;
-}
-#endif
-
 
 void Madgwick6DOF(float gyro[], float acc[], bool new_acc, float gyro_dt, float acc_dt, float attitude_euler[], float gravity_vector[]) {
   // DESCRIPTION: Attitude estimation through sensor fusion - 6DOF

@@ -60,10 +60,6 @@
 
 //=======================================================IMU SETUP========================================================//
 
-// Uncomment only one IMU
-#define USE_MPU6050_I2C
-// #define USE_MPU9250_SPI
-
 typedef enum {
   ROT_0_DEG = 0,
   ROT_90_DEG = 1,
@@ -85,11 +81,6 @@ float acc_bias[AXIS_COUNT] = {
   0.0f, // y
   0.0f, // z
 };
-#ifdef USE_MPU9250_SPI
-// TODO Run the function calibrateMagnetometer() in setup() to find these values.
-float mag_bias[AXIS_COUNT] = {0.0, 0.0, 0.0};
-float mag_scale[AXIS_COUNT] = {0.0, 0.0, 0.0};
-#endif
 
 
 //======================================================SERVO SETUP=======================================================//
