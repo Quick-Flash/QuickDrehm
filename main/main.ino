@@ -468,7 +468,7 @@ void loop() {
   float gyro_filtered[AXIS_COUNT] = { raw_gyro[AXIS_ROLL], raw_gyro[AXIS_PITCH], raw_gyro[AXIS_YAW] };
   gyroFiltersApply(&gyroFilters, gyro_filtered);
 
-  float acc_filtered[AXIS_COUNT] = { raw_acc[AXIS_X], raw_acc[AXIS_X], raw_acc[AXIS_X] };
+  float acc_filtered[AXIS_COUNT] = { raw_acc[AXIS_X], raw_acc[AXIS_Y], raw_acc[AXIS_Z] };
   accFiltersApply(&accFilters, acc_filtered);
 
   float attitude_euler[AXIS_COUNT]; // This is the attitude in euler angles, AKA roll, pitch, and yaw

@@ -165,26 +165,26 @@ void calculateGyroBias() {
 
   Serial.println("float acc_bias[AXIS_COUNT] = {");
   Serial.print("  ");
-  Serial.print(acc_bias[AXIS_X]);
+  Serial.print(acc_bias[AXIS_X], 5);
   Serial.println("f, // x");
   Serial.print("  ");
-  Serial.print(acc_bias[AXIS_Y]);
+  Serial.print(acc_bias[AXIS_Y], 5);
   Serial.println("f, // y");
   Serial.print("  ");
-  Serial.print(acc_bias[AXIS_Z]);
+  Serial.print(acc_bias[AXIS_Z], 5);
   Serial.println("f, // z");
   Serial.println("};");
   Serial.println("");
   
   Serial.println("float gyro_bias[AXIS_COUNT] = {");
   Serial.print("  ");
-  Serial.print(gyro_bias[AXIS_ROLL]);
+  Serial.print(gyro_bias[AXIS_ROLL], 5);
   Serial.println("f, // roll");
   Serial.print("  ");
-  Serial.print(gyro_bias[AXIS_PITCH]);
+  Serial.print(gyro_bias[AXIS_PITCH], 5);
   Serial.println("f, // pitch");
   Serial.print("  ");
-  Serial.print(gyro_bias[AXIS_YAW]);
+  Serial.print(gyro_bias[AXIS_YAW], 5);
   Serial.println("f, // yaw");
   Serial.println("};");
   Serial.println("");
