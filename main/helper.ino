@@ -76,14 +76,14 @@ float rangeScalerApply(rangeScaler_t scaler, float input) {
   return scaler.scaleFactor * input + scaler.offset;
 }
 
-void boundedRangeScalerInit(boundedRangeScaler_t *scaler, float input_min, float input_max, float desired_min, float desired_max) {
-  rangeScalerInit(&scaler->scaler, input_min, input_max, desired_min, desired_max);
+void boundedRangeScalerInit(boundedRangeScaler_t *scaler, float input_min, float input_mid, float input_max, float desired_min, float desired_mid, float desired_max) {
+  midpointRangeScalerInit(&scaler->scaler, input_min, input_mid, input_max, desired_min, desired_mid, desired_max, 0.0f);
   scaler->min = desired_min;
   scaler->max = desired_max;
 }
 
 float boundedRangeScalerApply(boundedRangeScaler_t scaler, float input) {
-  float output = rangeScalerApply(scaler.scaler, input);
+  float output = midpointRangeScalerApply(scaler.scaler, input);
   return constrain(output, scaler.min, scaler.max);
 }
 

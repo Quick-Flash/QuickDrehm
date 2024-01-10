@@ -132,12 +132,6 @@ typedef struct rangeScaler_s {
   float offset;
 } rangeScaler_t;
 
-typedef struct boundedRangeScaler_s {
-  rangeScaler_t scaler;
-  float min;
-  float max;
-} boundedRangeScaler_t;
-
 // Used in helper.ino to scale ranges between an input range with midpoint and an output range with midpoint
 typedef struct midpointRangeScaler_s {
   rangeScaler_t low_range;
@@ -147,6 +141,12 @@ typedef struct midpointRangeScaler_s {
   float desired_mid;
 } midpointRangeScaler_t;
 
+
+typedef struct boundedRangeScaler_s {
+  midpointRangeScaler_t scaler;
+  float min;
+  float max;
+} boundedRangeScaler_t;
 //============================================FILTER STRUCTS=======================================================//
 
 typedef struct pt1Filter_s {
