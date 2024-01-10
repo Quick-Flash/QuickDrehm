@@ -52,20 +52,6 @@ typedef struct ratePid_s {
   float max_iterm_windup;
 } ratePid_t;
 
-typedef struct gyroFilters_s {
-  dynNotch_t dynNotch;
-  rpmFilter_t rpmFilter;
-  pt1Filter_t lowpassFilter[AXIS_COUNT];
-} gyroFilters_t;
-
-typedef struct accFilters_s {
-  pt2Filter_t lowpassFilter[AXIS_COUNT];
-} accFilters_t;
-
-typedef struct rcFilters_s {
-  pt3Filter_t lowpassFilter[4];
-} rcFilters_t;
-
 //======================================================ATTITUDE PID=======================================================//
 
 // TODO tune the attitude pid controller
@@ -268,91 +254,6 @@ void ratePidReset(ratePid_t *pid) {
   }
 }
 
-//======================================================GYRO FILTERS=======================================================//
-
-// initialize gyro filters
-void initGyroFilters(gyroFilters_t *gyroFilters) {
-  dynNotchInit( // you likely don't need to mess with this
-    &gyroFilters->dynNotch, 
-    100.0f, // min freq
-    600.0f, // max_freq
-    3, // number of peaks tracked, max allowed is five
-    2.5f, // notch q
-    DT // dT
-  );
-
-  rpmFilterInit( // You likely don't need to mess with this
-    &gyroFilters->rpmFilter, 
-    75.0f, // min freq
-    50.0f, // fade range
-    3.0f, // notch q
-    DT // dT
-  );
-  
-  for (int axis = 0; axis < AXIS_COUNT; axis++) { // initialize all lowpass filters for each axis
-    pt1FilterInit(
-      &gyroFilters->lowpassFilter[axis], 
-      100.0f, // Filter cutoff 
-      DT // dT
-    );
-  }
-}
-
-// applies gyro filters to all axis of the gyro
-void gyroFiltersApply(gyroFilters_t *gyroFilters, float gyro[]) {
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    for (int motor = 0; motor < MOTOR_COUNT; motor++) { // rpm filter
-      gyro[axis] = rpmFilterApply(&gyroFilters->rpmFilter, axis, gyro[axis]);
-    }
-    gyro[axis] = pt1FilterApply(&gyroFilters->lowpassFilter[axis], gyro[axis]); // lowpass filter
-  }
-
-  dynNotchUpdate(&gyroFilters->dynNotch, gyro, DT); // update the dyn notch
-  
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    gyro[axis] = dynNotchFilter(&gyroFilters->dynNotch, axis, gyro[axis]);
-  }
-}
-
-//======================================================ACC FILTERS=======================================================//
-
-// initialize acc filters
-void initAccFilters(accFilters_t *accFilters) {
-  for (int axis = 0; axis < AXIS_COUNT; axis++) { // initialize all lowpass filters for each axis
-    pt2FilterInit(
-      &accFilters->lowpassFilter[axis], 
-      20.0f, // Filter cutoff 
-      DT // dT
-    );
-  }
-}
-
-// applies ac filters to all axis of the acc
-void accFiltersApply(accFilters_t *accFilters, float acc[]) {
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    acc[axis] = pt2FilterApply(&accFilters->lowpassFilter[axis], acc[axis]); // lowpass filter
-  }
-}
-
-//======================================================RC FILTERS=======================================================//
-
-// initialize rc filters
-void initRCFilters(rcFilters_t *rcFilters) {
-  for (int channel = 0; channel < 4; channel++) { // initialize all lowpass filters for each axis
-    pt3FilterInit(
-      &rcFilters->lowpassFilter[channel], 
-      20.0f, // Filter cutoff 
-      DT // dT
-    );
-  }
-}
-
-// applies gyro filters to all axis of the gyro
-void rcFiltersApply(rcFilters_t *rcFilters, float rc[]) {
-  for (int channel = 0; channel < 4; channel++) {
-    rc[channel] = pt3FilterApply(&rcFilters->lowpassFilter[channel], rc[channel]); // lowpass filter
-  }
-}
 
 //========================================================================================================================//
 //                                                      VOID SETUP                                                        //

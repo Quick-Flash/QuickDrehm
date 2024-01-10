@@ -147,7 +147,8 @@ typedef struct midpointRangeScaler_s {
   float desired_mid;
 } midpointRangeScaler_t;
 
-// filter structs
+//============================================FILTER STRUCTS=======================================================//
+
 typedef struct pt1Filter_s {
   float state;
   float k;
@@ -177,15 +178,6 @@ typedef struct notchFilter_s {
     float x1, x2, y1, y2;
     float weight;
 } notchFilter_t;
-
-typedef struct rpmFilter_s {
-  notchFilter_t notch[AXIS_COUNT][MOTOR_COUNT];
-  pt1Filter_t cutoffFilter[MOTOR_COUNT];
-  float minHz;
-  float maxHz;
-  float fadeRange;
-  float q;
-} rpmFilter_t;
 
 //============================================DYNAMIC NOTCH STUFF CAN BE IGNORED=======================================================//
 // conversion from time to frequency domain and filtering wizardry happens here
@@ -258,3 +250,29 @@ typedef struct dynNotch_s {
   float   sdftNoiseThreshold;
   float   pt1LooptimeS;
 } dynNotch_t;
+
+//============================================APPLIED FILTER STRUCTS=======================================================//
+
+typedef struct rpmFilter_s {
+  notchFilter_t notch[AXIS_COUNT][MOTOR_COUNT];
+  pt1Filter_t cutoffFilter[MOTOR_COUNT];
+  float minHz;
+  float maxHz;
+  float fadeRange;
+  float q;
+} rpmFilter_t;
+
+typedef struct gyroFilters_s {
+  dynNotch_t dynNotch;
+  rpmFilter_t rpmFilter;
+  pt1Filter_t lowpassFilter[AXIS_COUNT];
+} gyroFilters_t;
+
+typedef struct accFilters_s {
+  pt2Filter_t lowpassFilter[AXIS_COUNT];
+} accFilters_t;
+
+typedef struct rcFilters_s {
+  pt3Filter_t lowpassFilter[4];
+} rcFilters_t;
+
