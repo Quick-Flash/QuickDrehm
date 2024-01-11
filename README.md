@@ -1,8 +1,3 @@
-![dRehmFlight Logo](https://github.com/nickrehm/dRehmFlight/blob/master/dRehmFlight%20Logo.png)
-
-[Intro Video](https://www.youtube.com/watch?v=tlD0C5CrWcA&lc=Ugx6m02xjHk8QH19vd94AaABAg)
-
-[RcGroups Support Thread](https://www.rcgroups.com/forums/showthread.php?3706571-dRehmFlight-VTOL-Teensy-Flight-Controller-and-Stabilization)
 # QuickDrehm
 
 A heavily modified fork of dRehmFlight that offers flight performance improvements. Adds RPM filtering, and dynamic notch filtering.
