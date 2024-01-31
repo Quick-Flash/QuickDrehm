@@ -36,7 +36,11 @@ Additionally to get the Teensy4.0 to function it must be overclocked to 816mhz (
 
 Set the optimization to fastest to give yourself the most headroom with your code.
 
-![fastest optimize](doc/Optimize.png)
+![Fastest Optimize](doc/Optimize.png)
+
+## Wiring Diagram
+![Wiring Diagram](doc/Teensy-Wiring-Diagram.png)
+
 
 ## Tutorial Videos
 
