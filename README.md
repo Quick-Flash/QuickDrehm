@@ -2,8 +2,6 @@
 
 A heavily modified fork of dRehmFlight that offers flight performance improvements. Adds RPM filtering, and dynamic notch filtering.
 
-[DrehmFlight RcGroups Support Thread](https://www.rcgroups.com/forums/showthread.php?3706571-dRehmFlight-VTOL-Teensy-Flight-Controller-and-Stabilization)
-
 ## Overview
 
 QuickDrehm is the flight controller for hobbyists, hackers, and non-coders interested in stabilizing their wacky and unique flying creations. The code and supporting documentation is built to bring someone up to speed on VTOL flight stabilization concepts as quickly and painlessly as possible. The code is written and presented in a way that is intuitive, and easy to follow. No more digging through countless folders and confusing classes just to add an 'if' statement for your custom drone application. This flight controller uses a Teensy 4.0 microcontroller, so there is no confusing flashing or compiling process necessary. If you can use Arduino, you can start expanding the capabilites of this flight controller to your liking.
@@ -32,6 +30,13 @@ Code is uploaded to the board using the Arduino IDE; download the latest version
 
 To connect to the Teensy, you must also download and install the Teensyduino arduino add-on; download and instructions available here: https://www.pjrc.com/teensy/td_download.html
 
+Additionally to get the Teensy4.0 to function it must be overclocked to 816mhz (it appears to be a bug and I'd happily accept a PR to fix it).
+
+![816mhz Overclock](doc/Teensy-Overclocking.png)
+
+Set the optimization to fastest to give yourself the most headroom with your code.
+
+![fastest optimize](doc/Optimize.png)
 
 ## Tutorial Videos
 
