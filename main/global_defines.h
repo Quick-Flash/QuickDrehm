@@ -38,7 +38,7 @@
 
 #define RC_CHANNEL_COUNT 12 // 12 is the default channel number for ELRS I guess setting this number higher will cause failsafes on ELRS 12 is plenty though
 // Uncomment only one receiver type
-#define USE_SBUS_RX // if using ELRS set SBUS Failsafe to Last Position otherwise there will be failsafe problems
+#define USE_SBUS_RX // if using ELRS set SBUS Failsafe to send failsafe packets otherwise there will be failsafe problems
 // #define USE_DSM_RX
 
 // TODO ensure that these match the channels they go to, this is setup for standard opentx/edgetx channel order AETR

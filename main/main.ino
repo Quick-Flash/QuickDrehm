@@ -308,10 +308,8 @@ void setup() {
   // Initialize radio communication
   radioSetup();
 
-  //
   // delay(1000); // Add extra delay so that we can get a radio connection first. Increase value if things aren't working.
   // findRcChannelLimits(RC_ARM); // RC limits printed to serial monitor. Paste these in radio.ino, then comment this out forever.
-  //
 
   // Initialize IMU communication
   IMUinit();
@@ -320,7 +318,6 @@ void setup() {
 
   // Get IMU error to zero accelerometer and gyro readings, assuming vehicle is level when powered up
   // calculateGyroBias(); // Calibration parameters printed to serial monitor. Paste these in the user specified variables section, then comment this out forever.
-  // 
 
   // Indicate entering main loop with 3 quick blinks
   setupBlink(3, 160, 70); // numBlinks, upTime (ms), downTime (ms)

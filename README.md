@@ -32,14 +32,14 @@ To connect to the Teensy, you must also download and install the Teensyduino ard
 
 Additionally to get the Teensy4.0 to function it must be overclocked to 816mhz (it appears to be a bug and I'd happily accept a PR to fix it).
 
-![816mhz Overclock](doc/Teensy-Overclocking.png)
+![816mhz Overclock](doc/images/Teensy-Overclocking.png)
 
 Set the optimization to fastest to give yourself the most headroom with your code.
 
-![Fastest Optimize](doc/Optimize.png)
+![Fastest Optimize](doc/images/Optimize.png)
 
 ## Wiring Diagram
-![Wiring Diagram](doc/Teensy-Wiring-Diagram.png)
+![Wiring Diagram](doc/images/Teensy-Wiring-Diagram.png)
 
 
 ## Tutorial Videos
