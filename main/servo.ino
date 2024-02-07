@@ -20,50 +20,50 @@ void initServoScales(boundedRangeScaler_t servoScales[]) {
 
   servoScalerInitHelper(
     servoScales[SERVO_1], 
-    -90.0f, 35.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.6f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
 
   servoScalerInitHelper(
     servoScales[SERVO_2], 
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
 
   servoScalerInitHelper(
     servoScales[SERVO_3],
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
   
   servoScalerInitHelper(
     servoScales[SERVO_4], 
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   ); 
 
   servoScalerInitHelper(
     servoScales[SERVO_5], 
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
 
   servoScalerInitHelper(
     servoScales[SERVO_6], 
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
 
   servoScalerInitHelper(
     servoScales[SERVO_7], 
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   ); 
 
   servoScalerInitHelper(
     servoScales[SERVO_8], 
     90.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.0f, 0.5f, 1.0f // change these if you want to limit servo movement, only takes a range of 0.0-1.0
+    0.0f, 0.5f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
 }
 
@@ -76,11 +76,11 @@ void initServos(boundedRangeScaler_t servoScales[]) {
   initServoScales(servoScales);
 }
 
-void servoScalerInitHelper(boundedRangeScaler_t &servoScales, float angle_min, float angle_max, float range_min, float range_mid, float range_max) {
+void servoScalerInitHelper(boundedRangeScaler_t &servoScales, float angle_min, float angle_max, float output_min, float output_mid, float output_max) {
     boundedRangeScalerInit(
     &servoScales, 
     angle_min, 0.0f, angle_max, // input min and max set to servo/control surface angles
-    range_min * 180.0f, range_mid * 180.0f, range_max * 180.0f // output min and max don't change as this relates to servo library code
+    output_min * 180.0f, output_mid * 180.0f, output_max * 180.0f // output min and max don't change as this relates to servo library code
   );
 }
 
