@@ -70,7 +70,7 @@ void initServoScales(boundedRangeScaler_t servoScales[]) {
 void initServos(boundedRangeScaler_t servoScales[]) {
   for (int i = 0; i < SERVO_COUNT; i++) {
     // these values should work for most servos
-    servo[i].attach(servoPins[i], 900, 2100); // Pin, min PWM value, max PWM value
+    servo[i].attach(servoPins[i], 500, 2500); // Pin, min PWM value, max PWM value
   }
 
   initServoScales(servoScales);

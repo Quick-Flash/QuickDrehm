@@ -28,239 +28,12 @@ Nick Drehm for the creation of DrehmFlight which vastly sped up the creation of 
 #include "global_defines.h"
 
 //========================================================================================================================//
-//                                                USER-SPECIFIED STRUCTS                                                  //                           
-//========================================================================================================================//
-
-typedef struct attitudePid_s {
-  float kp; // pterm constant
-  // no need for ki term in the attitude controller
-  float kd; // dterm constant
-
-  float previous_error_or_measurement[AXIS_COUNT]; // last error or measurement, used for calculating dterm
-} attitudePid_t;
-
-typedef struct ratePid_s {
-  float kp[AXIS_COUNT]; // pterm constant
-  float ki[AXIS_COUNT]; // iterm constant
-  float kd[AXIS_COUNT]; // dterm constant
-  float kff[AXIS_COUNT]; // ffterm constant, should only be used in fixed wing flight
-
-  pt2Filter_t dterm_lowpass[AXIS_COUNT];
-  float previous_error_or_measurement[AXIS_COUNT]; // last error or measurement, used for calculating dterm
-  float integral[AXIS_COUNT]; // the integral of error used for calculating iterm
-
-  float max_iterm_windup;
-} ratePid_t;
-
-//======================================================ATTITUDE PID=======================================================//
-
-// TODO tune the attitude pid controller
-void attitudePidInit(attitudePid_t *pid) {
-  pid->kp = 275.0f;
-  pid->kd = 1.0f;
-
-  pid->previous_error_or_measurement[0] = 0.0f;
-  pid->previous_error_or_measurement[1] = 0.0f;
-  pid->previous_error_or_measurement[2] = 0.0f;
-
-}
-
-// finds the cross product between the attitude_setpoint and the measured gravity_vector
-// don't worry about how this works, its pretty nifty, ask me if you are curious about it
-void attitudeError(float attitude_setpoint[], float gravity_vector[], float error[]) {
-  float temp_error[3];
-  temp_error[0] = gravity_vector[AXIS_Z] * attitude_setpoint[AXIS_Y] - gravity_vector[AXIS_Y] * attitude_setpoint[AXIS_Z];
-  temp_error[1] = -gravity_vector[AXIS_Z] * attitude_setpoint[AXIS_X] + gravity_vector[AXIS_X] * attitude_setpoint[AXIS_Z];
-  temp_error[2] = gravity_vector[AXIS_Y] * attitude_setpoint[AXIS_X] - gravity_vector[AXIS_X] * attitude_setpoint[AXIS_Y];
-
-  float dot_product = gravity_vector[AXIS_X] * attitude_setpoint[AXIS_X] + gravity_vector[AXIS_Y] * attitude_setpoint[AXIS_Y] + gravity_vector[AXIS_Z] * attitude_setpoint[AXIS_Z];
-
-  // if the dot product is negative our error is greater than 90 degrees
-  // increase correction on the more wrong axis and correct to upside down on the other
-  // aka if pitch was 130 deg and roll was 5, rather than flipping over on roll axis, make roll 0 deg and push hard on pitch
-  if (dot_product < 0.0) {
-    float x = abs(temp_error[0]);
-    float y = abs(temp_error[1]);
-
-    if (x > y) {
-      float sign_x = sign(temp_error[0]);
-      error[0] = 2.0f * sign_x - temp_error[0];
-      error[1] = -temp_error[1];
-      error[2] = temp_error[2];
-    } else {
-      float sign_y = sign(temp_error[1]);
-      error[0] = -temp_error[0];
-      error[1] = 2.0f * sign_y - temp_error[1];
-      error[2] = temp_error[2];
-    }
-  } else {
-    error[0] = temp_error[0];
-    error[1] = temp_error[1];
-    error[2] = temp_error[2];
-  }
-}
-
-// outputs setpoint for the rate pid controller
-// TODO finish this function
-void attitudePidApply(attitudePid_t *pid, float setpoint_angles[], float gravity_vector[], float setpoint_rpy[]) {
-  float setpoint_xyz[AXIS_COUNT]; // gravity setpoint
-  attitudeAnglesToAttitudeSetpoint(setpoint_angles[AXIS_ROLL], setpoint_angles[AXIS_PITCH], setpoint_xyz); // create the attitude setpoint
-
-  float error_array[AXIS_COUNT]; 
-  attitudeError(setpoint_xyz, gravity_vector, error_array);
-
-  float yaw_setpoint = setpoint_rpy[AXIS_YAW];
-
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    float error = error_array[axis];
-
-    // TODO calculate Pterm which is a scaler of error
-    float pterm = pid->kp * 0.0;
-    
-    // TODO calculate Dterm which is the derivative of error (faster) or the negative derivative of gyro (smoother) times a scaler
-    float derivative = 0.0f;
-    // only keep one previous_error_or_measurement, remove the one you are not using
-    pid->previous_error_or_measurement[axis] = gravity_vector[axis];
-    pid->previous_error_or_measurement[axis] = error;
-
-    float dterm = pid->kd * derivative;
-
-    // pidsum is the addition of all the pid terms
-    float pidsum = pterm + dterm;
-    setpoint_rpy[axis] = pidsum; // attitude pid pidsum becomes the setpoint into to the rate pid controller
-  }
-
-  // this is how we add yaw rotation
-  setpoint_rpy[AXIS_ROLL] += gravity_vector[AXIS_X] * yaw_setpoint;
-  setpoint_rpy[AXIS_PITCH] += gravity_vector[AXIS_Y] * yaw_setpoint;
-  setpoint_rpy[AXIS_YAW] += gravity_vector[AXIS_Z] * yaw_setpoint;
-}
-
-//======================================================RATE PID=======================================================//
-
-// TODO tune the rate pid controller
-void ratePidInit(ratePid_t *pid) {
-// pid scaling used in BF/inav
-#define PTERM_SCALE (0.032029f / 1000.0f)
-#define ITERM_SCALE (0.244381f / 1000.0f)
-#define DTERM_SCALE (0.000529f / 1000.0f)
-#define FFTERM_SCALE (0.032029f / 1000.0f)
-
-  // Roll PID's
-  pid->kp[AXIS_ROLL] = PTERM_SCALE * 10.0f;
-  pid->ki[AXIS_ROLL] = ITERM_SCALE * 10.0f;
-  pid->kd[AXIS_ROLL] = DTERM_SCALE * 10.0f;
-  pid->kff[AXIS_ROLL] = FFTERM_SCALE * 0.0f;
-
-  // Pitch PID's
-  pid->kp[AXIS_PITCH] = PTERM_SCALE * 10.0f;
-  pid->ki[AXIS_PITCH] = ITERM_SCALE * 10.0f;
-  pid->kd[AXIS_PITCH] = DTERM_SCALE * 10.0f;
-  pid->kff[AXIS_PITCH] = FFTERM_SCALE * 0.0f;
-
-  // Yaw PID's
-  pid->kp[AXIS_YAW] = PTERM_SCALE * 15.0f;
-  pid->ki[AXIS_YAW] = ITERM_SCALE * 10.0f;
-  pid->kd[AXIS_YAW] = DTERM_SCALE * 5.0f;
-  pid->kff[AXIS_YAW] = FFTERM_SCALE * 0.0f;
-
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    pid->previous_error_or_measurement[axis] = 0.0f;
-    pid->integral[axis] = 0.0f;
-
-    pt2FilterInit(
-      &pid->dterm_lowpass[axis], 
-      90.0f,  // cutoff
-      DT
-    );
-  }
-
-  pid->max_iterm_windup = 0.15f; // iterm can grow at most to 15% motor output
-}
-
-void updatePids(
-    ratePid_t *pid,
-    float roll_p,
-    float roll_i,
-    float roll_d,
-    float roll_ff,
-    float pitch_p,
-    float pitch_i,
-    float pitch_d,
-    float pitch_ff,
-    float yaw_p,
-    float yaw_i,
-    float yaw_d,
-    float yaw_ff
-  ) {
-  #define PTERM_SCALE (0.032029f / 1000.0f)
-  #define ITERM_SCALE (0.244381f / 1000.0f)
-  #define DTERM_SCALE (0.000529f / 1000.0f)
-  #define FFTERM_SCALE (0.032029f / 1000.0f)
-  // Roll PID's
-  pid->kp[AXIS_ROLL] = PTERM_SCALE * roll_p;
-  pid->ki[AXIS_ROLL] = ITERM_SCALE * roll_i;
-  pid->kd[AXIS_ROLL] = DTERM_SCALE * roll_d;
-  pid->kff[AXIS_ROLL] = FFTERM_SCALE * roll_ff;
-
-  // Pitch PID's
-  pid->kp[AXIS_PITCH] = PTERM_SCALE * pitch_p;
-  pid->ki[AXIS_PITCH] = ITERM_SCALE * pitch_i;
-  pid->kd[AXIS_PITCH] = DTERM_SCALE * pitch_d;
-  pid->kff[AXIS_PITCH] = FFTERM_SCALE * pitch_ff;
-
-  // Yaw PID's
-  pid->kp[AXIS_YAW] = PTERM_SCALE * roll_p;
-  pid->ki[AXIS_YAW] = ITERM_SCALE * roll_i;
-  pid->kd[AXIS_YAW] = DTERM_SCALE * roll_d;
-  pid->kff[AXIS_YAW] = FFTERM_SCALE * roll_ff;
-}
-
-// TODO finish this function
-void ratePidApply(ratePid_t *pid, float setpoint[], float gyro[], float pidSums[]) {
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    // TODO calculate error
-    float error = 0.0f;
-
-    // TODO calculate Pterm which is a scaler of error
-    float pterm = pid->kp[axis] * 0.0f;
-
-    // TODO calculate Iterm which is the integral of error times a scaler
-    pid->integral[axis] += pid->ki[axis] * 0.0f;
-
-    pid->integral[axis] = constrain(pid->integral[axis], -pid->max_iterm_windup, pid->max_iterm_windup);
-    float iterm = pid->integral[axis];
-
-    // TODO calculate Dterm which is the derivative of error (faster) or the negative derivative of gyro (smoother) times a scaler
-    float derivative = 0.0f;
-    // only keep one previous_error_or_measurement, remove the one you are not using
-    pid->previous_error_or_measurement[axis] = gyro[axis];
-    pid->previous_error_or_measurement[axis] = error;
-
-    derivative = pt2FilterApply(&pid->dterm_lowpass[axis], derivative); // filter the dterm, helps with noise
-    float dterm = pid->kd[axis] * derivative;
-
-    // TODO calculate FFterm which is a scaler of the setpoint (Should be really only be used in fixed wing flight modes)
-    float ffterm = pid->kff[axis] * 0.0f;
-    
-    // pidsum is the output of the PID controller, simply add all pid terms together
-    pidSums[axis] = pterm + iterm + dterm + ffterm;
-  }
-}
-
-void ratePidReset(ratePid_t *pid) {
-  for (int axis = 0; axis < AXIS_COUNT; axis++) {
-    pid->integral[axis] = 0.0f;
-  }
-}
-
-
-//========================================================================================================================//
 //                                                      VOID SETUP                                                        //
 //========================================================================================================================//
 
-//==================================================VALUES TO INITIALIZE==================================================//
+//============================================GLOBAL VARIABLES TO INITIALIZE==============================================//
 
+// global variables
 midpointRangeScaler_t rcScalers[RC_CHANNEL_COUNT];
 boundedRangeScaler_t servoScales[MAX_SERVO_COUNT];
 attitudePid_t attitudePid;
@@ -330,7 +103,7 @@ void setup() {
 // TODO easily debug any part of your code when needed
 // Example of how to print values copy and paste this into the function loop() wherever you want debugging
 /*
-  bool should_print = shouldPrint(current_time, 10.0f); // Print data at 50hz
+  bool should_print = shouldPrint(current_time, 10.0f); // Print data at 10hz
   if (should_print) {
     printDebug("gyro roll", raw_gyro[AXIS_ROLL]);
     printDebug(", pitch", raw_gyro[AXIS_PITCH]);
@@ -351,7 +124,7 @@ void loop() {
   loopBlink(current_time, 0.5f); // Indicate we are in main loop with a blink every x seconds
 
 
-//===============================================GET IMU DATA AND FILTER===================================================//
+//=============================================GET IMU DATA AND APPLY FILTERS=============================================//
 
   float raw_gyro[AXIS_COUNT];
   float raw_acc[AXIS_COUNT]; // static means it is not reset every loop
@@ -370,7 +143,7 @@ void loop() {
   accFiltersApply(&accFilters, acc_filtered);
 
   float attitude_euler[AXIS_COUNT]; // This is the attitude in euler angles, AKA roll, pitch, and yaw
-  float gravity_vector[AXIS_COUNT]; // This is a 3d vector that points towards gravity. Using this is more accurate for angle mode
+  float gravity_vector[AXIS_COUNT]; // This is a 3d vector that points towards gravity. Using this is more accurate for attitude mode
 
   // Updates estimated atittude (degrees) Think of this like AHRS in an aircraft
   Madgwick6DOF(
@@ -378,7 +151,7 @@ void loop() {
     attitude_euler, gravity_vector // Will be updated with attitude data
   );
 
-//===============================================GET RC DATA AND FILTER===================================================//
+//=============================================GET RC DATA AND APPLY FILTERS===============================================//
 
   // Get rc commands
   uint16_t raw_rc_channels[RC_CHANNEL_COUNT]; // We will scale and set this to a float later
@@ -416,16 +189,16 @@ void loop() {
 //===============================================CREATE SETPOINTS FOR PID CONTROLLER===================================================//
 
   // TODO finish this
-  float setpoints_rpy[AXIS_COUNT]; // these are the desired angles or rotation
+  float setpoints_rpy[AXIS_COUNT]; // these are the desired attitudes or rotation
 
   // TODO add extra modes for fixedwing flight modes with different setpoints
-  if (rc_channels[RC_AUX1] > 0.55) { // lets call aux1 angle mode for now, you can rename it later
-    // These setpoints are in deg, in other words what angle you want to be at, except for yaw which is in deg/s
-    // keep the max angle below about 60
+  if (rc_channels[RC_AUX1] > 0.55) { // lets call aux1 attitude mode for now, you should rename it later
+    // These setpoints are in deg, in other words what attitude you want to be at, except for yaw which is in deg/s
+    // keep the max attitude below about 60
 
-    float max_angle = 45.0f;
-    setpoints_rpy[AXIS_ROLL] = rcCurve(rc_channels[RC_ROLL], 0.5f, max_angle); // scaled value, expo, max angle deg
-    setpoints_rpy[AXIS_PITCH] = rcCurve(rc_channels[RC_PITCH], 0.5f, max_angle); // scaled value, expo, max angle deg
+    float max_attitude = 45.0f;
+    setpoints_rpy[AXIS_ROLL] = rcCurve(rc_channels[RC_ROLL], 0.5f, max_attitude); // scaled value, expo, max attitude deg
+    setpoints_rpy[AXIS_PITCH] = rcCurve(rc_channels[RC_PITCH], 0.5f, max_attitude); // scaled value, expo, max attitude deg
 
     float max_rotation = 300.0f;
     // yaw is set to negative rc_channels positive gyro yaw is to the left we want stick movements to the right to be positive
@@ -433,7 +206,7 @@ void loop() {
   } else { // acro mode
     // These setpoints are in deg/sec, in otherwords how fast you want to rotate
     // be careful setting the max setpoint above 60 deg for yaw on fixed wings as they have trouble yawing that fast
-    // with thrust vectoring fixed wing setpoint above 80 deg for ayw is possible
+    // with thrust vectoring fixed wing setpoint above 80 deg for yaw is possible
     // be careful setting the max setpoint above 300 for pitch and roll on fixed wing as they have trouble rotating that fast
 
     float max_rotation = 300.0f;
@@ -449,13 +222,13 @@ void loop() {
 
   // deal with failsafe case
   if (failsafe) { // Set rc_channels/acro to values you want after failsafe
-    // You may want to set rc_channels to allow for a plane to do slow turns in angle mode.
+    // You may want to set rc_channels to allow for a plane to do slow turns in attitude mode.
     rc_channels[RC_THROTTLE] = 0.0f; // Unless you really know what you are doing set throttle to 0
-    rc_channels[RC_ARM] = 0.0f; // Unless you really know what you are doing disarm
+    // rc_channels[RC_ARM] = 0.0f; // no need to disarm unless you don't to recover from failsafe already armed
 
-    // put your fixed wing into angle mode and slowly turn it to the right while failsafed
+    // put your fixed wing into attitude mode and slowly turn it to the right while failsafed
     // really only works for fixed wing aircraft
-    rc_channels[RC_AUX1] = 1.0f; // set the aircraft to angle mode
+    rc_channels[RC_AUX1] = 1.0f; // set the aircraft to attitude mode
     setpoints_rpy[AXIS_ROLL] = 25.0; // tilt right slightly to help turn
     setpoints_rpy[AXIS_PITCH] = 5.0; // pitch down to help keep some airspeed and prevent stalling
 
@@ -499,13 +272,13 @@ void loop() {
   );
 */
   float pidSums[AXIS_COUNT] = {0.0f, 0.0f, 0.0f}; // will be used in the mixer
-  if (rc_channels[RC_AUX1] > 0.55) { // lets call aux1 angle mode for now, you can rename it later
+  if (rc_channels[RC_AUX1] > 0.55) { // lets call aux1 attitude mode for now, you should rename it later
 
     // will modify setpoints_rpy to be used as the setpoint input to ratePidApply
     attitudePidApply(
       &attitudePid,
-      setpoints_rpy, // the angles you to roll/pitch the craft to
-      gravity_vector, // used to find how far off the desired angle we are
+      setpoints_rpy, // the attitude you to roll/pitch the craft to
+      gravity_vector, // used to find how far off the desired attitude we are
       setpoints_rpy // output of the attitude pid controller, will modify your setpoint roll pitch and yaw
     );
 
@@ -679,7 +452,7 @@ bool armedStatus(float throttle, float arm_channel) {
   return armed;
 }
 
-float motorCutStatus(float throttle) {
+bool motorCutStatus(float throttle) {
   // DESCRIPTION: Return true if we should set motors to 0.0
   /*
       Monitors the state of throttle. If throttle is low return true.
@@ -690,56 +463,5 @@ float motorCutStatus(float throttle) {
     return true;
   } else {
     return false;
-  }
-}
-
-// DESCRIPTION: Regulate main loop rate to specified frequency in Hz
-/*
- * It's good to operate at a constant loop rate for optimal control and filtering. Interrupt routines running in the
- * background cause the loop rate to fluctuate. This function basically just waits at the end of every loop iteration until 
- * the correct time has passed since the start of the current loop for the desired loop rate in Hz.
- */
-void maxLoopRate(int freq) {
-  static elapsedMicros loopTime = 0;
-
-  unsigned long waitTimeMicroseconds = 1.0f / freq * SEC_TO_MICROSEC;
-  
-  // Sit in loop until appropriate time has passed
-  while (waitTimeMicroseconds > loopTime) {}
-  loopTime = 0;
-}
-
-// DESCRIPTION: Blink LED on board to indicate main loop is running
-/*
- * It looks cool.
- */
-void loopBlink(unsigned long current_time, float blink_seconds) {
-  static unsigned long blink_counter = 0;
-  static unsigned long blink_delay = 0;
-  static bool blinkAlternate = 1;
-
-  if (current_time - blink_counter > blink_delay) {
-    blink_counter = micros();
-    digitalWrite(13, blinkAlternate); // Pin 13 is built in LED
-    
-    unsigned long blink_microseconds = blink_seconds * SEC_TO_MICROSEC;
-
-    if (blinkAlternate == 1) {
-      blinkAlternate = 0;
-      blink_delay = blink_microseconds / 3; // on for 1/3rd of the time
-    } else if (blinkAlternate == 0) {
-      blinkAlternate = 1;
-      blink_delay = blink_microseconds * 2 / 3; // off for 2/3rd of the time
-    }
-  }
-}
-
-void setupBlink(int numBlinks,int upTime, int downTime) {
-  // DESCRIPTION: Simple function to make LED on board blink as desired
-  for (int j = 1; j <= numBlinks; j++) {
-    digitalWrite(13, LOW);
-    delay(downTime);
-    digitalWrite(13, HIGH);
-    delay(upTime);
   }
 }

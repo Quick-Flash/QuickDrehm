@@ -170,3 +170,54 @@ float invSqrt(float x) {
   */
   return 1.0f / sqrtf(x); // Teensy can run sqrtf() just as fast as it divides, so no real speed penalty
 }
+
+// DESCRIPTION: Regulate main loop rate to specified frequency in Hz
+/*
+ * It's good to operate at a constant loop rate for optimal control and filtering. Interrupt routines running in the
+ * background cause the loop rate to fluctuate. This function basically just waits at the end of every loop iteration until 
+ * the correct time has passed since the start of the current loop for the desired loop rate in Hz.
+ */
+void maxLoopRate(int freq) {
+  static elapsedMicros loopTime = 0;
+
+  unsigned long waitTimeMicroseconds = 1.0f / freq * SEC_TO_MICROSEC;
+  
+  // Sit in loop until appropriate time has passed
+  while (waitTimeMicroseconds > loopTime) {}
+  loopTime = 0;
+}
+
+// DESCRIPTION: Blink LED on board to indicate main loop is running
+/*
+ * It looks cool.
+ */
+void loopBlink(unsigned long current_time, float blink_seconds) {
+  static unsigned long blink_counter = 0;
+  static unsigned long blink_delay = 0;
+  static bool blinkAlternate = 1;
+
+  if (current_time - blink_counter > blink_delay) {
+    blink_counter = micros();
+    digitalWrite(13, blinkAlternate); // Pin 13 is built in LED
+    
+    unsigned long blink_microseconds = blink_seconds * SEC_TO_MICROSEC;
+
+    if (blinkAlternate == 1) {
+      blinkAlternate = 0;
+      blink_delay = blink_microseconds / 3; // on for 1/3rd of the time
+    } else if (blinkAlternate == 0) {
+      blinkAlternate = 1;
+      blink_delay = blink_microseconds * 2 / 3; // off for 2/3rd of the time
+    }
+  }
+}
+
+void setupBlink(int numBlinks,int upTime, int downTime) {
+  // DESCRIPTION: Simple function to make LED on board blink as desired
+  for (int j = 1; j <= numBlinks; j++) {
+    digitalWrite(13, LOW);
+    delay(downTime);
+    digitalWrite(13, HIGH);
+    delay(upTime);
+  }
+}
