@@ -389,10 +389,10 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
   
   // TODO mix inputs to servo commands
   // servos need to be scaled to work properly with the servo scaling that was set earlier
-  servo_commands[SERVO_0] = 0.0f;
-  servo_commands[SERVO_1] = 0.0f;
-  servo_commands[SERVO_2] = 0.0f;
-  servo_commands[SERVO_3] = 0.0f;
+  servo_commands[SERVO_RIGHT_REAR_AILERON] = 0.0f;
+  servo_commands[SERVO_LEFT_REAR_AILERON] = 0.0f;
+  servo_commands[SERVO_RIGHT_FRONT_AILERON] = 0.0f;
+  servo_commands[SERVO_LEFT_FRONT_AILERON] = 0.0f;
   servo_commands[SERVO_4] = 0.0f;
   servo_commands[SERVO_5] = 0.0f;
   servo_commands[SERVO_6] = 0.0f;
