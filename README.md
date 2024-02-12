@@ -1,13 +1,6 @@
-![dRehmFlight Logo](https://github.com/nickrehm/dRehmFlight/blob/master/dRehmFlight%20Logo.png)
-
-[Intro Video](https://www.youtube.com/watch?v=tlD0C5CrWcA&lc=Ugx6m02xjHk8QH19vd94AaABAg)
-
-[RcGroups Support Thread](https://www.rcgroups.com/forums/showthread.php?3706571-dRehmFlight-VTOL-Teensy-Flight-Controller-and-Stabilization)
 # QuickDrehm
 
 A heavily modified fork of dRehmFlight that offers flight performance improvements. Adds RPM filtering, and dynamic notch filtering.
-
-[DrehmFlight RcGroups Support Thread](https://www.rcgroups.com/forums/showthread.php?3706571-dRehmFlight-VTOL-Teensy-Flight-Controller-and-Stabilization)
 
 ## Overview
 
@@ -36,6 +29,17 @@ These (and all Amazon links contained within the supporting documentation) are A
 Code is uploaded to the board using the Arduino IDE; download the latest version here: https://www.arduino.cc/en/main/software
 
 To connect to the Teensy, you must also download and install the Teensyduino arduino add-on; download and instructions available here: https://www.pjrc.com/teensy/td_download.html
+
+Additionally to get the Teensy4.0 to function it must be overclocked to 816mhz (it appears to be a bug and I'd happily accept a PR to fix it).
+
+![816mhz Overclock](doc/images/Teensy-Overclocking.png)
+
+Set the optimization to fastest to give yourself the most headroom with your code.
+
+![Fastest Optimize](doc/images/Optimize.png)
+
+## Wiring Diagram
+![Wiring Diagram](doc/images/Teensy-Wiring-Diagram.png)
 
 
 ## Tutorial Videos
