@@ -103,7 +103,7 @@ void setup() {
 // TODO easily debug any part of your code when needed
 // Example of how to print values copy and paste this into the function loop() wherever you want debugging
 /*
-  bool should_print = shouldPrint(current_time, 10.0f); // Print data at 10hz
+  bool should_print = shouldPrint(micros(), 10.0f); // Print data at 10hz
   if (should_print) {
     printDebug("gyro roll", raw_gyro[AXIS_ROLL]);
     printDebug(", pitch", raw_gyro[AXIS_PITCH]);
@@ -389,7 +389,7 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
   
   // TODO mix inputs to servo commands
   // servos need to be scaled to work properly with the servo scaling that was set earlier
-  servo_commands[SERVO_RIGHT_REAR_AILERON] = 0.0f;
+  servo_commands[SERVO_RIGHT_REAR_AILERON] = rc_channels[RC_ROLL] * 90.0f;
   servo_commands[SERVO_LEFT_REAR_AILERON] = 0.0f;
   servo_commands[SERVO_RIGHT_FRONT_AILERON] = 0.0f;
   servo_commands[SERVO_LEFT_FRONT_AILERON] = 0.0f;
@@ -398,6 +398,12 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
   servo_commands[SERVO_6] = 0.0f;
   servo_commands[SERVO_7] = 0.0f;
   servo_commands[SERVO_8] = 0.0f;
+
+  bool should_print = shouldPrint(micros(), 10.0f); // Print data at 10hz
+  if (should_print) {
+    printDebug("right aileron", servo_commands[SERVO_RIGHT_REAR_AILERON]);
+    printNewLine();
+  }
 }
 
 // DESCRIPTION: Arming occurs when arm switch is switched from low to high twice in the span of a second.
