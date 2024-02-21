@@ -78,8 +78,14 @@ float rangeScalerApply(rangeScaler_t scaler, float input) {
 
 void boundedRangeScalerInit(boundedRangeScaler_t *scaler, float input_min, float input_mid, float input_max, float desired_min, float desired_mid, float desired_max) {
   midpointRangeScalerInit(&scaler->scaler, input_min, input_mid, input_max, desired_min, desired_mid, desired_max, 0.0f);
-  scaler->min = desired_min;
-  scaler->max = desired_max;
+
+  if (desired_min < desired_max) {
+    scaler->min = desired_min;
+    scaler->max = desired_max;
+  } else {
+    scaler->min = desired_max;
+    scaler->max = desired_min;
+  }
 }
 
 float boundedRangeScalerApply(boundedRangeScaler_t scaler, float input) {
@@ -94,8 +100,13 @@ void midpointRangeScalerInit(
   float desired_min, float desired_mid, float desired_max, 
   float deadband
   ) {
-  rangeScalerInit(&scaler->low_range, input_min, input_mid - deadband, desired_min, desired_mid);
-  rangeScalerInit(&scaler->high_range, input_mid + deadband, input_max, desired_mid, desired_max);
+  if (input_min < input_max) {
+    rangeScalerInit(&scaler->low_range, input_min, input_mid - deadband, desired_min, desired_mid);
+    rangeScalerInit(&scaler->high_range, input_mid + deadband, input_max, desired_mid, desired_max);
+  } else {
+    rangeScalerInit(&scaler->high_range, input_min, input_mid - deadband, desired_min, desired_mid);
+    rangeScalerInit(&scaler->low_range, input_mid + deadband, input_max, desired_mid, desired_max);
+  }
   scaler->deadband_low = input_mid - deadband;
   scaler->deadband_high = input_mid + deadband;
   scaler->desired_mid = desired_mid;
