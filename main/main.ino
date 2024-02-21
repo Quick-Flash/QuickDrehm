@@ -390,9 +390,9 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
   // TODO mix inputs to servo commands
   // servos need to be scaled to work properly with the servo scaling that was set earlier
   servo_commands[SERVO_RIGHT_REAR_AILERON] = rc_channels[RC_ROLL] * 90.0f;
-  servo_commands[SERVO_LEFT_REAR_AILERON] = 0.0f;
-  servo_commands[SERVO_RIGHT_FRONT_AILERON] = 0.0f;
-  servo_commands[SERVO_LEFT_FRONT_AILERON] = 0.0f;
+  servo_commands[SERVO_LEFT_REAR_AILERON] = rc_channels[RC_ROLL] * 90.0f;
+  servo_commands[SERVO_RIGHT_FRONT_AILERON] = rc_channels[RC_ROLL] * 90.0f;
+  servo_commands[SERVO_LEFT_FRONT_AILERON] = rc_channels[RC_ROLL] * 90.0f;
   servo_commands[SERVO_4] = 0.0f;
   servo_commands[SERVO_5] = 0.0f;
   servo_commands[SERVO_6] = 0.0f;
@@ -401,7 +401,7 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
 
   bool should_print = shouldPrint(micros(), 10.0f); // Print data at 10hz
   if (should_print) {
-    printDebug("right aileron", servo_commands[SERVO_RIGHT_REAR_AILERON]);
+    printDebug("front left aileron", servo_commands[SERVO_LEFT_FRONT_AILERON]);
     printNewLine();
   }
 }
