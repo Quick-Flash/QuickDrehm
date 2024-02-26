@@ -50,7 +50,7 @@ Move all your sticks and switches to their extreme values, then set your sticks 
 In the file `radio.ino` edit the function call to `midpointRangeScalerInit()` inside the function `initRcScalers()`.
 You should modify it so that the `174.0f, 992.0f, 1811.0f, // input min, mid and max` line matches the serial monitor output.
 
-Uncomment the lines 
+Comment in the lines 
 ```
 delay(1000); // Add extra delay so that we can get a radio connection first. Increase value if things aren't working.
 findRcChannelLimits(RC_ARM); // RC limits printed to serial monitor. Paste these in radio.ino, then comment this out forever.
