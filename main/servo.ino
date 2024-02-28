@@ -27,7 +27,7 @@ void initServoScales(boundedRangeScaler_t servoScales[]) {
   servoScalerInitHelper(
     servoScales[SERVO_RIGHT_FRONT_AILERON], 
     30.0f, -90.0f, // Servo control surface angle min and max, use a higher then lower number to swap directions
-    0.2f, 0.35f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
+    0.28f, 0.39f, 1.0f // Servo output min, mid, and max. Modify is servo isn't centering or moving to far. Only takes a range of 0.0-1.0
   );
 
   servoScalerInitHelper(

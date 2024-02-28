@@ -192,7 +192,7 @@ void loop() {
   float setpoints_rpy[AXIS_COUNT]; // these are the desired attitudes or rotation
 
   // TODO add extra modes for fixedwing flight modes with different setpoints
-  if (rc_channels[RC_AUX1] > 0.55) { // lets call aux1 attitude mode for now, you should rename it later
+  if (rc_channels[RC_SWA] > 0.55) { // lets call aux1 attitude mode for now, you should rename it later
     // These setpoints are in deg, in other words what attitude you want to be at, except for yaw which is in deg/s
     // keep the max attitude below about 60
 
@@ -228,7 +228,7 @@ void loop() {
 
     // put your fixed wing into attitude mode and slowly turn it to the right while failsafed
     // really only works for fixed wing aircraft
-    rc_channels[RC_AUX1] = 1.0f; // set the aircraft to attitude mode
+    rc_channels[RC_SWA] = 1.0f; // set the aircraft to attitude mode
     setpoints_rpy[AXIS_ROLL] = 25.0; // tilt right slightly to help turn
     setpoints_rpy[AXIS_PITCH] = 5.0; // pitch down to help keep some airspeed and prevent stalling
 
@@ -272,7 +272,7 @@ void loop() {
   );
 */
   float pidSums[AXIS_COUNT] = {0.0f, 0.0f, 0.0f}; // will be used in the mixer
-  if (rc_channels[RC_AUX1] > 0.55) { // lets call aux1 attitude mode for now, you should rename it later
+  if (rc_channels[RC_SWA] > 0.55) { // lets call aux1 attitude mode for now, you should rename it later
 
     // will modify setpoints_rpy to be used as the setpoint input to ratePidApply
     attitudePidApply(
@@ -399,11 +399,11 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
   servo_commands[SERVO_7] = 0.0f;
   servo_commands[SERVO_8] = 0.0f;
 
-  bool should_print = shouldPrint(micros(), 10.0f); // Print data at 10hz
-  if (should_print) {
-    printDebug("front left aileron", servo_commands[SERVO_LEFT_FRONT_AILERON]);
-    printNewLine();
-  }
+  // bool should_print = shouldPrint(micros(), 10.0f); // Print data at 10hz
+  // if (should_print) {
+  //   printDebug("front left aileron", servo_commands[SERVO_LEFT_FRONT_AILERON]);
+  //   printNewLine();
+  // }
 }
 
 // DESCRIPTION: Arming occurs when arm switch is switched from low to high twice in the span of a second.
