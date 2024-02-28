@@ -17,7 +17,8 @@ Fettec, KISS, AM32, and ESCape32 ESC will also all work.
 Modify the `controlMixer()` function in main.ino so that only one motor at a time will move as you move a throttle.
 Example `motor_commands[MOTOR_0] = rc_channels[RC_THROTTLE]`
 The `motor_commands` expects a range of 0 to 1, any values outside this ranged are clipped to 0 or 1.
-Run this code and ensure that you can spin a motor.
+Run this code and ensure that you can spin a motor. The motors will not spin until you arm your aircraft. 
+Remember that arming requires throttle low and flicking the arm switch twice.
 
 ## Renaming Motors to Match Their Use
 In `global_defines.h` the motor defines for the motors you are using should be renamed in all files.
