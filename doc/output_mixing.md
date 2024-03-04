@@ -23,6 +23,9 @@ A positive yaw PID sum should create a positive yaw rotation.
 
 Motors create a yaw torque opposite to the direction in which they spin.
 
+Servos can be powered via USB and can be tested without arming the aircraft. 
+To test that motors are acting as desired you will need to arm the aircraft and test without propellers!
+
 As an example if we use have a Quad Plus setup shown below a potential mixer would look like:
 ```
 float throttle = rc_channels[RC_THROTTLE];
