@@ -117,10 +117,10 @@ float gyro_bias[AXIS_COUNT] = {
 #define POLE_COUNT 12 // the number of magnets in the motor, must be accurate to get accurate RPM data
 
 // TODO rename to match motor function, IE MOTOR_FRONT_LEFT
-#define MOTOR_0 0 // rename to match where the motor is or its function
-#define MOTOR_1 1 // rename to match where the motor is or its function
-#define MOTOR_2 2 // rename to match where the motor is or its function
-#define MOTOR_3 3 // rename to match where the motor is or its function
+#define MOTOR_REAR_LEFT 0 // rename to match where the motor is or its function
+#define MOTOR_FRONT_RIGHT 1 // rename to match where the motor is or its function
+#define MOTOR_FRONT_LEFT 2 // rename to match where the motor is or its function
+#define MOTOR_REAR_RIGHT 3 // rename to match where the motor is or its function
 #define MOTOR_4 4 // rename to match where the motor is or its function
 #define MOTOR_5 5 // rename to match where the motor is or its function
 
