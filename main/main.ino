@@ -382,28 +382,22 @@ void controlMixer(float rc_channels[], float pidSums[], float motor_commands[], 
 
   // TODO mix inputs to motor commands
   // motor commands should be between 0 and 1
-  motor_commands[MOTOR_REAR_LEFT] = 0.0f;
-  motor_commands[MOTOR_FRONT_RIGHT] = 0.0f;
+  motor_commands[MOTOR_REAR_LEFT] = rc_channels[RC_THROTTLE];
+  motor_commands[MOTOR_FRONT_RIGHT] = rc_channels[RC_THROTTLE];
   motor_commands[MOTOR_FRONT_LEFT] = rc_channels[RC_THROTTLE];
-  motor_commands[MOTOR_REAR_RIGHT] = 0.0f;
+  motor_commands[MOTOR_REAR_RIGHT] = rc_channels[RC_THROTTLE];
   
   // TODO mix inputs to servo commands
   // servos need to be scaled to work properly with the servo scaling that was set earlier
-  servo_commands[SERVO_RIGHT_REAR_AILERON] = rc_channels[RC_ROLL] * 90.0f;
-  servo_commands[SERVO_LEFT_REAR_AILERON] = rc_channels[RC_ROLL] * 90.0f;
-  servo_commands[SERVO_RIGHT_FRONT_AILERON] = rc_channels[RC_ROLL] * 90.0f;
-  servo_commands[SERVO_LEFT_FRONT_AILERON] = rc_channels[RC_ROLL] * 90.0f;
+  servo_commands[SERVO_RIGHT_REAR_AILERON] = -90;//rc_channels[RC_ROLL] * 90.0f;
+  servo_commands[SERVO_LEFT_REAR_AILERON] = -90;//rc_channels[RC_ROLL] * 90.0f;
+  servo_commands[SERVO_RIGHT_FRONT_AILERON] = -90;//rc_channels[RC_ROLL] * 90.0f;
+  servo_commands[SERVO_LEFT_FRONT_AILERON] = -90;//rc_channels[RC_ROLL] * 90.0f;
   servo_commands[SERVO_4] = 0.0f;
   servo_commands[SERVO_5] = 0.0f;
   servo_commands[SERVO_6] = 0.0f;
   servo_commands[SERVO_7] = 0.0f;
   servo_commands[SERVO_8] = 0.0f;
-
-  // bool should_print = shouldPrint(micros(), 10.0f); // Print data at 10hz
-  // if (should_print) {
-  //   printDebug("front left aileron", servo_commands[SERVO_LEFT_FRONT_AILERON]);
-  //   printNewLine();
-  // }
 }
 
 // DESCRIPTION: Arming occurs when arm switch is switched from low to high twice in the span of a second.
