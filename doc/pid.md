@@ -66,3 +66,14 @@ The function `ratePidApply()` takes `ratePid_t *pid, float setpoint[], float gyr
 
 ## Helpful Defines
 The `#define LOOPRATE` and `#define DT` can be useful for calculating integrals and derivatives.
+
+## PID Tuning Videos
+
+https://www.youtube.com/watch?v=qKy98Cbcltw&ab_channel=Horizon4electronics
+https://www.youtube.com/watch?v=fusr9eTceEo&ab_channel=GregoryL.Holst
+https://www.youtube.com/watch?v=4Y7zG48uHRo&ab_channel=AerospaceControlsLab
+https://www.youtube.com/watch?v=27lMKi2inpk&ab_channel=JoshuaBardwell
+https://www.youtube.com/watch?v=d_LuA-SwWQE&ab_channel=JoshuaBardwell
+https://www.youtube.com/watch?v=Q9dKVFRsn6k&ab_channel=JoshuaBardwell
+https://www.youtube.com/watch?v=5CncRd8O2r4&ab_channel=JoshuaBardwell
+https://www.youtube.com/watch?v=ehyXLsvaEhw&ab_channel=StingersSwarm
