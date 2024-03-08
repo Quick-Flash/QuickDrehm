@@ -189,10 +189,10 @@ void updatePids(
   pid->kff[AXIS_PITCH] = FFTERM_SCALE * pitch_ff;
 
   // Yaw PID's
-  pid->kp[AXIS_YAW] = PTERM_SCALE * roll_p;
-  pid->ki[AXIS_YAW] = ITERM_SCALE * roll_i;
-  pid->kd[AXIS_YAW] = DTERM_SCALE * roll_d;
-  pid->kff[AXIS_YAW] = FFTERM_SCALE * roll_ff;
+  pid->kp[AXIS_YAW] = PTERM_SCALE * yaw_p;
+  pid->ki[AXIS_YAW] = ITERM_SCALE * yaw_i;
+  pid->kd[AXIS_YAW] = DTERM_SCALE * yaw_d;
+  pid->kff[AXIS_YAW] = FFTERM_SCALE * yaw_ff;
 }
 
 // TODO finish this function
