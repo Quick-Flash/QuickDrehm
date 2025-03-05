@@ -34,10 +34,10 @@ float pitch_command = pidsum[AXIS_PITCH];
 float roll_command = pidsum[AXIS_ROLL];
 float yaw_command = pidsum[AXIS_YAW];
 
-motor_commands[MOTOR_A] = throttle - pitch_command - yaw_command;
-motor_commands[MOTOR_B] = throttle - roll_command + yaw_command;
-motor_commands[MOTOR_C] = throttle + pitch_command - yaw_command;
-motor_commands[MOTOR_D] = throttle + roll_command + yaw_command;
+motor_commands[MOTOR_A] = throttle - pitch_command + yaw_command;
+motor_commands[MOTOR_B] = throttle - roll_command - yaw_command;
+motor_commands[MOTOR_C] = throttle + pitch_command + yaw_command;
+motor_commands[MOTOR_D] = throttle + roll_command - yaw_command;
 ```
 
 As an example if we have a wing setup shown below a potential mixer would look like:
